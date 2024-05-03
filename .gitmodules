@@ -1,0 +1,3 @@
+[submodule "thirdparty/supertuple"]
+	path = thirdparty/supertuple
+	url = https://github.com/rodriados/supertuple
