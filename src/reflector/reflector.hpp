@@ -41,56 +41,13 @@ REFLECTOR_BEGIN_NAMESPACE
 namespace supertuple = ::SUPERTUPLE_NAMESPACE;
 
 /**
- * Reflects over the target data type, that is it extracts information about the
+ * Reflects over the target data type, that is, it extracts information about the
  * member properties of the target type.
  * @tparam T The target data type to be introspected.
  * @since 1.0
  */
 template <typename T>
-class reflector_t;
-
-/**
- * Extracts and manages references to each member property of the target type, thus
- * enumerating each of the target type's property members and allowing them to be
- * directly accessed or updated.
- * @tparam T The target data type to be introspected.
- * @since 1.0
- */
-template <typename T>
-class reflection_t : public reflector_t<T>::reference_tuple_t
-{
-    protected:
-        typedef typename reflector_t<T>::reference_tuple_t underlying_tuple_t;
-
-    public:
-        REFLECTOR_INLINE reflection_t() noexcept = delete;
-        REFLECTOR_INLINE reflection_t(const reflection_t&) noexcept = default;
-        REFLECTOR_INLINE reflection_t(reflection_t&&) noexcept = default;
-
-        /**
-         * Reflects over an instance and gathers refereces to its members.
-         * @param target The target instance to get references from.
-         */
-        REFLECTOR_INLINE reflection_t(T& target) noexcept
-          : underlying_tuple_t (extract(target, std::make_index_sequence<reflection_t::count>()))
-        {}
-
-        REFLECTOR_INLINE reflection_t& operator=(const reflection_t&) = default;
-        REFLECTOR_INLINE reflection_t& operator=(reflection_t&&) = default;
-
-    private:
-        /**
-         * Retrieves references to the properties of a reflected instance.
-         * @tparam I The member types index sequence.
-         * @param target The reflected type instance to gather references from.
-         * @return The new reference tuple instance.
-         */
-        template <size_t ...I>
-        REFLECTOR_INLINE static underlying_tuple_t extract(T& target, std::index_sequence<I...>) noexcept
-        {
-            return underlying_tuple_t(reflector_t<T>::template member<I>(target)...);
-        }
-};
+class reflection_t;
 
 namespace detail
 {
@@ -240,41 +197,69 @@ namespace detail
     template <typename ...T>
     REFLECTOR_CONSTEXPR auto to_storage_tuple(supertuple::tuple_t<T...>) noexcept
     -> supertuple::tuple_t<storage_t<sizeof(T), alignof(T)>...>;
+
+    /**
+     * Reflects over a trivial object type and extracts information about its internal
+     * property members, transforming it into instantiable tuples.
+     * @tparam T The type to be analyzed.
+     * @since 1.0
+     */
+    template <typename T>
+    class reflector_t
+    {
+        static_assert(!std::is_union<T>::value, "union types cannot be reflected");
+        static_assert(std::is_trivial<T>::value, "reflected type must be trivial");
+
+        private:
+            template <typename A, typename B>
+            using is_compatible = std::bool_constant<sizeof(A) == sizeof(B) && alignof(A) == alignof(B)>;
+
+        public:
+            using reflection_tuple_t = decltype(loophole<T>());
+            using reference_tuple_t = decltype(to_ref_tuple(std::declval<reflection_tuple_t>()));
+            using storage_tuple_t = decltype(to_storage_tuple(std::declval<reflection_tuple_t>()));
+
+        static_assert(
+            is_compatible<reflection_tuple_t, T>::value
+          , "reflection tuple is not compatible with target type");
+    };
 }
 
 /**
- * Reflects over an object type and extracts information about its internal property
- * members, transforming it into instantiable tuples.
- * @tparam T The type to be analyzed.
+ * Extracts and manages references to each member property of the target type, thus
+ * enumerating each of the target type's property members and allowing them to be
+ * directly accessed or updated.
+ * @tparam T The target data type to be introspected.
  * @since 1.0
  */
 template <typename T>
-class reflector_t
+class reflection_t : public detail::reflector_t<T>::reference_tuple_t
 {
-    static_assert(!std::is_union<T>::value, "union types cannot be reflected");
-    static_assert(std::is_trivial<T>::value, "reflected type must be trivial");
-
     private:
-        template <typename A, typename B>
-        using is_compatible = std::bool_constant<sizeof(A) == sizeof(B) && alignof(A) == alignof(B)>;
+        typedef detail::reflector_t<T> reflector_t;
+        typedef typename reflector_t::reference_tuple_t underlying_t;
 
     public:
-        using reflection_tuple_t = decltype(detail::loophole<T>());
-        using reference_tuple_t = decltype(detail::to_ref_tuple(std::declval<reflection_tuple_t>()));
-        using storage_tuple_t = decltype(detail::to_storage_tuple(std::declval<reflection_tuple_t>()));
-
-    static_assert(is_compatible<reflection_tuple_t, T>::value, "reflection tuple is not compatible with type");
+        using reference_tuple_t = underlying_t;
+        using reflection_tuple_t = typename reflector_t::reflection_tuple_t;
 
     public:
+        REFLECTOR_INLINE reflection_t() noexcept = delete;
+        REFLECTOR_INLINE reflection_t(const reflection_t&) noexcept = default;
+        REFLECTOR_INLINE reflection_t(reflection_t&&) noexcept = default;
+
         /**
-         * Retrieves the number of members within the reflected type.
-         * @return The number of members composing the target type.
+         * Reflects over an instance and gathers refereces to its members.
+         * @param target The target instance to get references from.
          */
-        REFLECTOR_CONSTEXPR static auto count() noexcept -> size_t
-        {
-            return reflection_tuple_t::count;
-        }
+        REFLECTOR_INLINE reflection_t(T& target) noexcept
+          : underlying_t (extract(target, std::make_index_sequence<underlying_t::count>()))
+        {}
 
+        REFLECTOR_INLINE reflection_t& operator=(const reflection_t&) = default;
+        REFLECTOR_INLINE reflection_t& operator=(reflection_t&&) = default;
+
+    public:
         /**
          * Retrieves the offset of a member of the reflected type by its index.
          * @tparam N The index of required member.
@@ -283,9 +268,9 @@ class reflector_t
         template <size_t N>
         REFLECTOR_CONSTEXPR static auto offset() noexcept -> ptrdiff_t
         {
-            constexpr storage_tuple_t r {};
-            return reinterpret_cast<size_t>(&r.template get<N>())
-                -  reinterpret_cast<size_t>(&r.template get<0>());
+            constexpr typename reflector_t::storage_tuple_t s {};
+            return reinterpret_cast<size_t>(&s.template get<N>())
+                -  reinterpret_cast<size_t>(&s.template get<0>());
         }
 
         /**
@@ -299,6 +284,19 @@ class reflector_t
         -> typename reference_tuple_t::template element_t<N> {
             using E = typename reflection_tuple_t::template element_t<N>;
             return *reinterpret_cast<E*>(reinterpret_cast<uint8_t*>(&target) + offset<N>());
+        }
+
+    private:
+        /**
+         * Retrieves references to the properties of a reflected instance.
+         * @tparam I The member types index sequence.
+         * @param target The reflected type instance to gather references from.
+         * @return The new reference tuple instance.
+         */
+        template <size_t ...I>
+        REFLECTOR_INLINE static underlying_t extract(T& target, std::index_sequence<I...>) noexcept
+        {
+            return underlying_t(member<I>(target)...);
         }
 };
 
