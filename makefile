@@ -8,9 +8,9 @@ NAME = reflector
 INCDIR = src
 SRCDIR = src
 EXPDIR = examples
+TSTDIR = test
 
 DSTDIR ?= dist
-TSTDIR ?= test
 OBJDIR ?= obj
 BINDIR ?= bin
 
