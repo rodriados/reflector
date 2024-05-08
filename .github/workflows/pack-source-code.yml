@@ -1,0 +1,29 @@
+name: pack-source-code
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  source-pack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python-is-python3
+
+      - name: Pack source code
+        run: |
+          make distribute
+
+      - name: Draft release with packed source code
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/reflector.hpp
+          draft: true

@@ -1,0 +1,7 @@
+[output]
+outfile = dist/reflector.hpp
+
+[project]
+workingdir = src
+namespace = reflector
+entrypoint = reflector.hpp
