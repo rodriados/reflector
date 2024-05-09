@@ -8,4 +8,12 @@
 
 #include <reflector/version.h>
 #include <reflector/environment.h>
+
+#ifndef REFLECTOR_AVOID_LOOPHOLE
+  #if REFLECTOR_CPP_DIALECT < 2014
+    #define REFLECTOR_AVOID_LOOPHOLE
+  #endif
+#endif
+
+#include <reflector/descriptor.hpp>
 #include <reflector/reflector.hpp>

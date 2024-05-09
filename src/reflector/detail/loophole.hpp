@@ -118,18 +118,6 @@ namespace detail
     };
 
     /**
-     * A general aligned memory storage container.
-     * @tparam S The number of bytes in storage.
-     * @tparam A The byte alignment the storage should use.
-     * @since 1.0
-     */
-    template <size_t S, size_t A>
-    struct alignas(A) storage_t
-    {
-        alignas(A) uint8_t storage[S];
-    };
-
-    /**
      * The recursion base for counting the number of property members in the target
      * type of a reflection processing.
      * @tparam T The target type for reflection processing.
@@ -174,22 +162,6 @@ namespace detail
     template <typename T>
     REFLECTOR_CONSTEXPR auto loophole() noexcept
     -> decltype(loophole1<T>(std::make_index_sequence<count<T>(0)>()));
-
-    /**
-     * Transforms each member type of a tuple into its reference type.
-     * @tparam T The tuple's type list.
-     */
-    template <typename ...T>
-    REFLECTOR_CONSTEXPR auto to_reference(supertuple::tuple_t<T...>) noexcept
-    -> supertuple::tuple_t<T&...>;
-
-    /**
-     * Transforms each member type of a tuple into an aligned storage.
-     * @tparam T The tuple's type list.
-     */
-    template <typename ...T>
-    REFLECTOR_CONSTEXPR auto to_storage(supertuple::tuple_t<T...>) noexcept
-    -> supertuple::tuple_t<storage_t<sizeof(T), alignof(T)>...>;
 }
 
 REFLECTOR_END_NAMESPACE
