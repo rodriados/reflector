@@ -13,11 +13,10 @@ TSTDIR = test
 DSTDIR ?= dist
 OBJDIR ?= obj
 BINDIR ?= bin
+PT3DIR ?= thirdparty
 
 CXX    ?= g++
 STDCPP ?= c++17
-
-MKTHIRD ?= makethird.mk
 
 # Defining macros inside code at compile time. This can be used to enable or disable
 # certain features on code or affect the projects compilation.
@@ -56,9 +55,6 @@ REFLECTOR_DIST_TARGET ?= $(DSTDIR)/$(NAME).hpp
 distribute: prepare-distribute thirdparty-distribute $(REFLECTOR_DIST_TARGET)
 no-thirdparty-distribute: prepare-distribute $(REFLECTOR_DIST_TARGET)
 
-thirdparty-distribute:
-	@$(MAKE) --no-print-directory -f $(MKTHIRD) distribute
-
 clean-distribute: thirdparty-clean
 	@rm -f $(REFLECTOR_DIST_TARGET)
 	@rm -rf $(DSTDIR)
@@ -68,28 +64,48 @@ INSTALL_TARGETS = $(SRCFILES:$(SRCDIR)/%=$(INSTALL_DESTINATION)/%)
 
 install: thirdparty-install $(INSTALL_TARGETS)
 
-thirdparty-install:
-	@$(MAKE) --no-print-directory -f $(MKTHIRD) install
-
 $(INSTALL_DESTINATION)/%: $(SRCDIR)/%
 	install -m 644 -D -T $< $@
 
 uninstall: thirdparty-uninstall
 	@rm -f $(INSTALL_TARGETS)
 
-thirdparty-uninstall:
-	@$(MAKE) --no-print-directory -f $(MKTHIRD) uninstall
-
-thirdparty-clean:
-	@$(MAKE) --no-print-directory -f $(MKTHIRD) clean
-
 clean: clean-distribute
 	@rm -rf $(OBJDIR)
 	@rm -rf $(BINDIR)
 
 .PHONY: all install uninstall clean
-.PHONY: prepare-distribute distribute thirdparty-distribute no-thirdparty-distribute clean-distribute
-.PHONY: thirdparty-install thirdparty-uninstall thirdparty-clean
+.PHONY: prepare-distribute distribute no-thirdparty-distribute clean-distribute
 
 $(REFLECTOR_DIST_TARGET): $(SRCFILES)
 	python pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@
+
+# The target path for third party dependencies' distribution files. As each dependency
+# may allow different settings, a variable for each one is needed.
+SUPERTUPLE_DIST_TARGET ?= $(DSTDIR)/supertuple.hpp
+
+THIRDPARTY_DEPENDENCIES ?= supertuple
+THIRDPARTY_TARGETS = $(SUPERTUPLE_DIST_TARGET)
+
+thirdparty-distribute: prepare-distribute $(THIRDPARTY_TARGETS)
+thirdparty-install:    $(THIRDPARTY_DEPENDENCIES:%=thirdparty-install-%)
+thirdparty-uninstall:  $(THIRDPARTY_DEPENDENCIES:%=thirdparty-uninstall-%)
+thirdparty-clean:      $(THIRDPARTY_DEPENDENCIES:%=thirdparty-clean-%)
+
+$(SUPERTUPLE_DIST_TARGET):
+ifndef SKIP_SUPERTUPLE_DISTRIBUTE
+	@$(MAKE) --no-print-directory -C $(PT3DIR)/supertuple distribute
+	cp $(PT3DIR)/supertuple/$@ $@
+endif
+
+thirdparty-install-%: %
+	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< install
+
+thirdparty-uninstall-%: %
+	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< uninstall
+
+thirdparty-clean-%: %
+	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< clean
+
+.PHONY: thirdparty-distribute thirdparty-install thirdparty-uninstall thirdparty-clean
+.PHONY: $(THIRDPARTY_DEPENDENCIES)
