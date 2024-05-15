@@ -92,6 +92,8 @@ thirdparty-install:    $(THIRDPARTY_DEPENDENCIES:%=thirdparty-install-%)
 thirdparty-uninstall:  $(THIRDPARTY_DEPENDENCIES:%=thirdparty-uninstall-%)
 thirdparty-clean:      $(THIRDPARTY_DEPENDENCIES:%=thirdparty-clean-%)
 
+ifndef REFLECTOR_DIST_STANDALONE
+
 $(SUPERTUPLE_DIST_TARGET):
 ifndef SKIP_SUPERTUPLE_DISTRIBUTE
 	@$(MAKE) --no-print-directory -C $(PT3DIR)/supertuple distribute
@@ -106,6 +108,14 @@ thirdparty-uninstall-%: %
 
 thirdparty-clean-%: %
 	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< clean
+
+else
+.PHONY: $(THIRDPARTY_TARGETS)
+.PHONY: $(THIRDPARTY_DEPENDENCIES:%=thirdparty-distribute-%)
+.PHONY: $(THIRDPARTY_DEPENDENCIES:%=thirdparty-install-%)
+.PHONY: $(THIRDPARTY_DEPENDENCIES:%=thirdparty-uninstall-%)
+.PHONY: $(THIRDPARTY_DEPENDENCIES:%=thirdparty-clean-%)
+endif
 
 .PHONY: thirdparty-distribute thirdparty-install thirdparty-uninstall thirdparty-clean
 .PHONY: $(THIRDPARTY_DEPENDENCIES)
