@@ -78,7 +78,7 @@ clean: clean-distribute
 .PHONY: prepare-distribute distribute no-thirdparty-distribute clean-distribute
 
 $(REFLECTOR_DIST_TARGET): $(SRCFILES)
-	python pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@
+	python3 pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@
 
 # The target path for third party dependencies' distribution files. As each dependency
 # may allow different settings, a variable for each one is needed.
