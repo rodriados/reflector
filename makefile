@@ -93,9 +93,10 @@ thirdparty-uninstall:  $(THIRDPARTY_DEPENDENCIES:%=thirdparty-uninstall-%)
 thirdparty-clean:      $(THIRDPARTY_DEPENDENCIES:%=thirdparty-clean-%)
 
 ifndef REFLECTOR_DIST_STANDALONE
+export SUPERTUPLE_DIST_STANDALONE = 1
 
-$(SUPERTUPLE_DIST_TARGET):
 ifndef SKIP_SUPERTUPLE_DISTRIBUTE
+$(SUPERTUPLE_DIST_TARGET):
 	@$(MAKE) --no-print-directory -C $(PT3DIR)/supertuple distribute
 	cp $(PT3DIR)/supertuple/$@ $@
 endif
