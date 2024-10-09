@@ -69,7 +69,7 @@ namespace detail
  * @return The target type descriptor instance.
  */
 template <typename T>
-REFLECTOR_CONSTEXPR auto describe() noexcept
+REFLECTOR_CONSTEXPR auto describe(T*) noexcept
 {
     static_assert(std::is_trivial<T>::value, "reflected type must be trivial");
     return detail::descriptor_t<T, decltype(detail::loophole<T>())>();
@@ -82,7 +82,7 @@ REFLECTOR_CONSTEXPR auto describe() noexcept
  * @return The target type descriptor instance.
  */
 template <typename T>
-REFLECTOR_CONSTEXPR auto describe() noexcept
+REFLECTOR_CONSTEXPR auto describe(T*) noexcept
 {
     static_assert(
         !std::is_void<T>::value && std::is_void<T>::value
@@ -100,6 +100,18 @@ template <typename T, typename ...R>
 REFLECTOR_CONSTEXPR auto provide(R T::*...) noexcept
 {
     return detail::descriptor_t<T, supertuple::tuple_t<R...>>();
+}
+
+/**
+ * Defines a reflectible type. This function can be specialized to provide a reflection
+ * description for specific types when it's not possible to use the automatic loophole.
+ * @tparam T The type to be described and reflected over.
+ * @return The target type descriptor instance.
+ */
+template <typename T>
+REFLECTOR_CONSTEXPR auto describe() noexcept
+{
+    return describe<T>(nullptr);
 }
 
 REFLECTOR_END_NAMESPACE
