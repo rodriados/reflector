@@ -8,5 +8,6 @@
 
 #include <reflector/version.h>
 #include <reflector/environment.h>
-#include <reflector/descriptor.hpp>
+
+#include <reflector/provider.hpp>
 #include <reflector/reflector.hpp>

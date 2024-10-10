@@ -8,14 +8,10 @@
 
 #include <utility>
 
-#include <supertuple.hpp>
-
 #include <reflector/environment.h>
-#include <reflector/descriptor.hpp>
+#include <reflector/provider.hpp>
 
 REFLECTOR_BEGIN_NAMESPACE
-
-namespace supertuple = ::SUPERTUPLE_NAMESPACE;
 
 /**
  * Extracts and manages references to each member property of the target type, thus
@@ -25,15 +21,17 @@ namespace supertuple = ::SUPERTUPLE_NAMESPACE;
  * @since 1.0
  */
 template <typename T>
-class reflection_t : public decltype(describe<T>())::reference_tuple_t
+class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_t
 {
-    private:
+    public:
         typedef T target_t;
-        typedef decltype(describe<T>()) descriptor_t;
+
+    private:
+        typedef decltype(provider_t<T>::provide()) descriptor_t;
         typedef typename descriptor_t::reference_tuple_t underlying_t;
 
     static_assert(
-        std::is_same<target_t, typename descriptor_t::target_t>::value
+        std::is_same_v<T, typename descriptor_t::target_t>
       , "the reflection target type is not the same as the descriptor type");
 
     public:
@@ -49,7 +47,7 @@ class reflection_t : public decltype(describe<T>())::reference_tuple_t
          * Reflects over an instance and gathers refereces to its members.
          * @param target The target instance to get references from.
          */
-        REFLECTOR_INLINE reflection_t(target_t& target) noexcept
+        REFLECTOR_INLINE reflection_t(T& target) noexcept
           : underlying_t (extract(target, std::make_index_sequence<underlying_t::count>()))
         {}
 
@@ -77,7 +75,7 @@ class reflection_t : public decltype(describe<T>())::reference_tuple_t
          * @return The extracted member reference.
          */
         template <size_t N>
-        REFLECTOR_CONSTEXPR static auto member(target_t& target) noexcept
+        REFLECTOR_CONSTEXPR static auto member(T& target) noexcept
         -> typename reference_tuple_t::template element_t<N> {
             using E = typename reflection_tuple_t::template element_t<N>;
             return *reinterpret_cast<E*>(reinterpret_cast<uint8_t*>(&target) + offset<N>());
@@ -91,7 +89,7 @@ class reflection_t : public decltype(describe<T>())::reference_tuple_t
          * @return The new reference tuple instance.
          */
         template <size_t ...I>
-        REFLECTOR_INLINE static underlying_t extract(target_t& target, std::index_sequence<I...>) noexcept
+        REFLECTOR_INLINE static underlying_t extract(T& target, std::index_sequence<I...>) noexcept
         {
             return underlying_t(member<I>(target)...);
         }
