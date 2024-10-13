@@ -1,0 +1,33 @@
+name: run-tests-ci
+
+env:
+  CATCH_SOURCE_URL: https://github.com/catchorg/Catch2/releases/download/v2.13.10/catch.hpp
+
+on: [push, pull_request]
+
+jobs:
+  test-runner:
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare compilers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang
+
+      - name: Install testing framework
+        run: |
+          wget -O catch.hpp ${{env.CATCH_SOURCE_FILE}}
+
+      - name: Run tests
+        run: |
+          CXX=${{matrix.compiler}} make build-tests -j4
+          bin/test/runtest
+
+      - name: Clean-up
+        run: |
+          make clean

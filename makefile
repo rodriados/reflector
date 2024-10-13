@@ -27,6 +27,9 @@ CXXFLAGS  ?= -std=$(STDCPP) -I$(INCDIR) $(FLAGS)
 SRCFILES := $(shell find $(SRCDIR) -name '*.h')                                \
             $(shell find $(SRCDIR) -name '*.hpp')
 
+TSTFILES := $(shell find $(TSTDIR) -name '*.cpp')
+TESTOBJS := $(TSTFILES:$(TSTDIR)/%.cpp=$(OBJDIR)/$(TSTDIR)/%.o)
+
 # The operational system check. At least for now, we assume that we are always running
 # on a Linux machine. Therefore, a disclaimer must be shown if this is not true.
 SYSTEMOS := $(shell uname)
@@ -45,6 +48,15 @@ ifeq ($(PREFIX),)
 endif
 
 all: distribute
+
+tests: build-tests
+
+prepare-tests:
+	@mkdir -p $(BINDIR)/$(TSTDIR)
+	@mkdir -p $(sort $(dir $(TESTOBJS)))
+
+build-tests: override FLAGS = -DTESTING -I. -I$(DSTDIR) -g -O0
+build-tests: thirdparty-distribute prepare-tests $(BINDIR)/$(TSTDIR)/runtest
 
 prepare-distribute:
 	@mkdir -p $(DSTDIR)
@@ -74,8 +86,21 @@ clean: clean-distribute
 	@rm -rf $(OBJDIR)
 	@rm -rf $(BINDIR)
 
-.PHONY: all install uninstall clean
+.PHONY: all clean tests install uninstall
 .PHONY: prepare-distribute distribute no-thirdparty-distribute clean-distribute
+.PHONY: prepare-tests build-tests
+
+# Creates dependency on header files. This is valuable so that whenever a header
+# file is changed, all objects depending on it will be forced to recompile.
+ifneq ($(wildcard $(OBJDIR)/.),)
+-include $(shell find $(OBJDIR) -name '*.d')
+endif
+
+$(BINDIR)/$(TSTDIR)/runtest: $(TESTOBJS)
+	$(CXX) $(LINKFLAGS) $^ -o $@
+
+$(OBJDIR)/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
 
 $(REFLECTOR_DIST_TARGET): $(SRCFILES)
 	python3 pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@
