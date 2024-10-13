@@ -27,16 +27,18 @@ class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_
         typedef T target_t;
 
     private:
-        typedef decltype(provider_t<T>::provide()) descriptor_t;
-        typedef typename descriptor_t::reference_tuple_t underlying_t;
+        typedef decltype(provider_t<T>::provide()) provider_t;
+        typedef typename provider_t::reference_tuple_t underlying_t;
 
     static_assert(
-        std::is_same_v<T, typename descriptor_t::target_t>
-      , "the reflection target type is not the same as the descriptor type");
+        sizeof (typename provider_t::target_t) == sizeof (T) &&
+        alignof(typename provider_t::target_t) == alignof(T) &&
+        std::is_base_of_v<typename provider_t::target_t, T>
+      , "the reflection target type is not compatible with the provided type");
 
     public:
         using reference_tuple_t = underlying_t;
-        using reflection_tuple_t = typename descriptor_t::reflection_tuple_t;
+        using reflection_tuple_t = typename provider_t::reflection_tuple_t;
 
     public:
         REFLECTOR_INLINE reflection_t() noexcept = delete;
@@ -63,7 +65,7 @@ class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_
         template <size_t N>
         REFLECTOR_CONSTEXPR static auto offset() noexcept -> ptrdiff_t
         {
-            constexpr typename descriptor_t::storage_tuple_t s {};
+            constexpr typename provider_t::storage_tuple_t s {};
             return reinterpret_cast<size_t>(&s.template get<N>())
                 -  reinterpret_cast<size_t>(&s.template get<0>());
         }
