@@ -1,7 +1,7 @@
 name: run-tests-ci
 
 env:
-  CATCH_SOURCE_URL: https://github.com/catchorg/Catch2/releases/download/v2.13.10/catch.hpp
+  CATCH_SOURCE_FILE: https://github.com/catchorg/Catch2/releases/download/v2.13.10/catch.hpp
 
 on: [push, pull_request]
 
