@@ -47,6 +47,21 @@ struct provider_t
 };
 #endif
 
+namespace detail
+{
+    /**
+     * Flattens an unary tuple by its array elements.
+     * @tparam T The unary tuple type to be flattened.
+     * @return The flattened unary tuple type.
+     */
+    template <
+        typename T
+      , typename E = std::remove_all_extents_t<T>
+      , size_t N   = sizeof(T) / sizeof(E)>
+    REFLECTOR_CONSTEXPR auto flatten(supertuple::tuple_t<T>) noexcept
+    -> typename supertuple::ntuple_t<E, N>::base_tuple_t;
+}
+
 /**
  * Provides the properties' description of a reflectible type.
  * @tparam T The type to be described and reflected over.
@@ -56,7 +71,27 @@ struct provider_t
 template <typename T, typename ...R>
 REFLECTOR_CONSTEXPR auto provide(R T::*...) noexcept
 {
-    return detail::descriptor_t<T, supertuple::tuple_t<R...>>();
+    using namespace supertuple;
+
+    // When a type is reflected via the loophole mechanism, array fields present
+    // in the type are flattened, effectivelly creating a different index for each
+    // element of each array field. On the other hand, when the type's fields are
+    // manually provided, these array fields become a single index in the reflection.
+    // This behaviour difference is not useful. Therefore, we must flatten these
+    // array fields to produce consistent behaviour between different mechanisms.
+
+    constexpr auto concatenate = [](auto a, auto b) {
+        return supertuple::concat(a, b);
+    };
+
+    using loophole_tuple_t = decltype(
+        supertuple::foldl(
+            tuple_t<decltype(detail::flatten(tuple_t<R>()))...>()
+          , concatenate
+        )
+    );
+
+    return detail::descriptor_t<T, loophole_tuple_t>();
 }
 
 REFLECTOR_END_NAMESPACE
