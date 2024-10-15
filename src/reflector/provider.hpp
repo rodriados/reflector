@@ -27,6 +27,7 @@ template <typename T>
 struct provider_t;
 
 #ifndef REFLECTOR_AVOID_LOOPHOLE
+
 /**
  * Provides type reflection by using the automatic reflection loophole mechanism.
  * @tparam T The type to have a reflection provided for.
@@ -45,6 +46,7 @@ struct provider_t
         return detail::descriptor_t<T, decltype(detail::loophole<T>())>();
     }
 };
+
 #endif
 
 namespace detail
@@ -88,10 +90,9 @@ REFLECTOR_CONSTEXPR auto provide(R T::*...) noexcept
         supertuple::foldl(
             tuple_t<decltype(detail::flatten(tuple_t<R>()))...>()
           , concatenate
-        )
-    );
+        ));
 
-    return detail::descriptor_t<T, loophole_tuple_t>();
+    return detail::descriptor_t<T, std::decay_t<loophole_tuple_t>>();
 }
 
 REFLECTOR_END_NAMESPACE
