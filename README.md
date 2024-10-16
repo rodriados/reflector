@@ -1,4 +1,4 @@
-# SuperTuple
+# Reflector
 ![license MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 ![version dev](https://img.shields.io/badge/version-dev-red.svg)
 
@@ -13,12 +13,12 @@ a type in compile-time.
 
 Please, keep in mind that the "features" exploited by this library to automatically
 extract the types of a struct may not be well-defined and vary a lot between different
-compilers versions. Therefore, it is prefereable to use the manually-descripted reflection
+compilers versions. Therefore, it is prefereable to use the manually-provided reflection
 interface.
 
 ## Install
 This library depends on the [supertuple](https://github.com/rodriados/supertuple)
-library for creating tuples memory-aligned with raw C++ structs. Besides that, the
+library for creating memory-aligned tuples with raw C++ structs. Besides that, the
 only other dependency is a C++17-compiler to be installed on your system. As a header-only
 library, you may as well directly download or copy the files into your own project
 or clone it following the steps below:
@@ -30,5 +30,5 @@ git clone --recursive-submodules https://github.com/rodriados/reflector
 To use the project, you can copy source files into your own project or install it
 on your system and then reference it in your code:
 ```cpp
-#include <reflector.hpp>
+#include <reflector.h>
 ```
