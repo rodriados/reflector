@@ -2,7 +2,6 @@
 # @file Makefile for compiling, installing and automatically testing.
 # @author Rodrigo Siqueira <rodriados@gmail.com>
 # @copyright 2024-present Rodrigo Siqueira
-export
 NAME = reflector
 
 INCDIR = src
@@ -21,8 +20,8 @@ STDCPP ?= c++17
 # Defining macros inside code at compile time. This can be used to enable or disable
 # certain features on code or affect the projects compilation.
 FLAGS 	  ?=
-LINKFLAGS ?=
-CXXFLAGS  ?= -std=$(STDCPP) -I$(INCDIR) $(FLAGS)
+CXXFLAGS  ?= -std=$(STDCPP) -I$(DSTDIR) -I$(TSTDIR) -I$(INCDIR) $(FLAGS)
+LINKFLAGS ?= $(FLAGS)
 
 SRCFILES := $(shell find $(SRCDIR) -name '*.h')                                \
             $(shell find $(SRCDIR) -name '*.hpp')
@@ -47,22 +46,23 @@ ifeq ($(PREFIX),)
 	PREFIX := /usr/local
 endif
 
-all: distribute
-
-tests: build-tests
+all: build-tests
 
 prepare-tests:
 	@mkdir -p $(BINDIR)/$(TSTDIR)
 	@mkdir -p $(sort $(dir $(TESTOBJS)))
 
-build-tests: override FLAGS = -DTESTING -I. -I$(DSTDIR) -g -O0
+build-tests: override FLAGS = -DTESTING -g -O0
 build-tests: thirdparty-distribute prepare-tests $(BINDIR)/$(TSTDIR)/runtest
+
+run-tests: build-tests
+	$(BINDIR)/$(TSTDIR)/runtest
 
 prepare-distribute:
 	@mkdir -p $(DSTDIR)
 
 REFLECTOR_DIST_CONFIG ?= .packconfig
-REFLECTOR_DIST_TARGET ?= $(DSTDIR)/$(NAME).hpp
+REFLECTOR_DIST_TARGET ?= $(DSTDIR)/$(NAME).h
 
 distribute: prepare-distribute thirdparty-distribute $(REFLECTOR_DIST_TARGET)
 no-thirdparty-distribute: prepare-distribute $(REFLECTOR_DIST_TARGET)
@@ -88,7 +88,7 @@ clean: clean-distribute
 
 .PHONY: all clean tests install uninstall
 .PHONY: prepare-distribute distribute no-thirdparty-distribute clean-distribute
-.PHONY: prepare-tests build-tests
+.PHONY: prepare-tests build-tests run-tests
 
 # Creates dependency on header files. This is valuable so that whenever a header
 # file is changed, all objects depending on it will be forced to recompile.
@@ -107,10 +107,11 @@ $(REFLECTOR_DIST_TARGET): $(SRCFILES)
 
 # The target path for third party dependencies' distribution files. As each dependency
 # may allow different settings, a variable for each one is needed.
-SUPERTUPLE_DIST_TARGET ?= $(DSTDIR)/supertuple.hpp
+THIRDPARTY_IGNORE ?=
+THIRDPARTY_DEPENDENCIES = supertuple
 
-THIRDPARTY_DEPENDENCIES ?= supertuple
-THIRDPARTY_TARGETS = $(SUPERTUPLE_DIST_TARGET)
+THIRDPARTY_TARGETS := $(filter-out $(THIRDPARTY_IGNORE),$(THIRDPARTY_DEPENDENCIES))
+THIRDPARTY_TARGETS := $(THIRDPARTY_TARGETS:%=$(DSTDIR)/%.h)
 
 thirdparty-distribute: prepare-distribute $(THIRDPARTY_TARGETS)
 thirdparty-install:    $(THIRDPARTY_DEPENDENCIES:%=thirdparty-install-%)
@@ -118,13 +119,14 @@ thirdparty-uninstall:  $(THIRDPARTY_DEPENDENCIES:%=thirdparty-uninstall-%)
 thirdparty-clean:      $(THIRDPARTY_DEPENDENCIES:%=thirdparty-clean-%)
 
 ifndef REFLECTOR_DIST_STANDALONE
+
 export SUPERTUPLE_DIST_STANDALONE = 1
 
-ifndef SKIP_SUPERTUPLE_DISTRIBUTE
-$(SUPERTUPLE_DIST_TARGET):
-	@$(MAKE) --no-print-directory -C $(PT3DIR)/supertuple distribute
-	cp $(PT3DIR)/supertuple/$@ $@
-endif
+$(DSTDIR)/%.h: % thirdparty-distribute-%
+	@cp $(PT3DIR)/$</$@ $@
+
+thirdparty-distribute-%: %
+	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< distribute
 
 thirdparty-install-%: %
 	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< install

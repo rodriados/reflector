@@ -23,12 +23,11 @@ jobs:
 
       - name: Install testing framework
         run: |
-          wget -O catch.hpp ${{env.CATCH_SOURCE_FILE}}
+          wget -O test/catch.hpp ${{env.CATCH_SOURCE_FILE}}
 
       - name: Run tests
         run: |
-          CXX=${{matrix.compiler}} make build-tests -j4
-          bin/test/runtest
+          CXX=${{matrix.compiler}} make run-tests -j4
 
       - name: Clean-up
         run: |

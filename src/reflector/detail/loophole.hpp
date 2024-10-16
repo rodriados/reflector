@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <utility>
 
-#include <supertuple.hpp>
+#include <supertuple.h>
 #include <reflector/environment.h>
 
 #ifndef REFLECTOR_AVOID_LOOPHOLE
@@ -80,7 +80,7 @@ namespace detail
          */
         REFLECTOR_CONSTEXPR friend auto latch(tag_t<T, N>) noexcept
         {
-            return typename std::remove_all_extents<P>::type {};
+            return std::remove_all_extents_t<P> {};
         }
     };
 

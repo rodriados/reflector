@@ -5,8 +5,8 @@
  * @copyright 2024-present Rodrigo Siqueira
  */
 #include <catch.hpp>
-#include <reflector.hpp>
-#include <supertuple.hpp>
+#include <reflector.h>
+#include <supertuple.h>
 
 template <typename T>
 struct point_t {
