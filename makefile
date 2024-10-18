@@ -20,7 +20,7 @@ STDCPP ?= c++17
 # Defining macros inside code at compile time. This can be used to enable or disable
 # certain features on code or affect the projects compilation.
 FLAGS 	  ?=
-CXXFLAGS  ?= -std=$(STDCPP) -I$(DSTDIR) -I$(TSTDIR) -I$(INCDIR) $(FLAGS)
+CXXFLAGS  ?= -std=$(STDCPP) -I$(DSTDIR) -I$(INCDIR) $(FLAGS)
 LINKFLAGS ?= $(FLAGS)
 
 SRCFILES := $(shell find $(SRCDIR) -name '*.h')                                \
@@ -46,13 +46,14 @@ ifeq ($(PREFIX),)
 	PREFIX := /usr/local
 endif
 
-all: build-tests
+all:   tests
+tests: build-tests
 
 prepare-tests:
 	@mkdir -p $(BINDIR)/$(TSTDIR)
 	@mkdir -p $(sort $(dir $(TESTOBJS)))
 
-build-tests: override FLAGS = -DTESTING -g -O0
+build-tests: override FLAGS := -DTESTING -g -O0 $(FLAGS)
 build-tests: thirdparty-distribute prepare-tests $(BINDIR)/$(TSTDIR)/runtest
 
 run-tests: build-tests
@@ -61,8 +62,10 @@ run-tests: build-tests
 prepare-distribute:
 	@mkdir -p $(DSTDIR)
 
+export DISTRIBUTE_DESTINATION ?= $(shell realpath $(DSTDIR))
+
 REFLECTOR_DIST_CONFIG ?= .packconfig
-REFLECTOR_DIST_TARGET ?= $(DSTDIR)/$(NAME).h
+REFLECTOR_DIST_TARGET ?= $(DISTRIBUTE_DESTINATION)/$(NAME).h
 
 distribute: prepare-distribute thirdparty-distribute $(REFLECTOR_DIST_TARGET)
 no-thirdparty-distribute: prepare-distribute $(REFLECTOR_DIST_TARGET)
@@ -71,7 +74,7 @@ clean-distribute: thirdparty-clean
 	@rm -f $(REFLECTOR_DIST_TARGET)
 	@rm -rf $(DSTDIR)
 
-INSTALL_DESTINATION ?= $(DESTDIR)$(PREFIX)/include
+export INSTALL_DESTINATION ?= $(PREFIX)/include
 INSTALL_TARGETS = $(SRCFILES:$(SRCDIR)/%=$(INSTALL_DESTINATION)/%)
 
 install: thirdparty-install $(INSTALL_TARGETS)
@@ -79,7 +82,7 @@ install: thirdparty-install $(INSTALL_TARGETS)
 $(INSTALL_DESTINATION)/%: $(SRCDIR)/%
 	install -m 644 -D -T $< $@
 
-uninstall: thirdparty-uninstall
+uninstall:
 	@rm -f $(INSTALL_TARGETS)
 
 clean: clean-distribute
@@ -90,6 +93,9 @@ clean: clean-distribute
 .PHONY: prepare-distribute distribute no-thirdparty-distribute clean-distribute
 .PHONY: prepare-tests build-tests run-tests
 
+$(REFLECTOR_DIST_TARGET): $(SRCFILES)
+	@python3 pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@
+
 # Creates dependency on header files. This is valuable so that whenever a header
 # file is changed, all objects depending on it will be forced to recompile.
 ifneq ($(wildcard $(OBJDIR)/.),)
@@ -99,11 +105,8 @@ endif
 $(BINDIR)/$(TSTDIR)/runtest: $(TESTOBJS)
 	$(CXX) $(LINKFLAGS) $^ -o $@
 
-$(OBJDIR)/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
-
-$(REFLECTOR_DIST_TARGET): $(SRCFILES)
-	python3 pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@
+$(OBJDIR)/$(TSTDIR)/%.o: $(TSTDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(TSTDIR) -MMD -c $< -o $@
 
 # The target path for third party dependencies' distribution files. As each dependency
 # may allow different settings, a variable for each one is needed.
@@ -111,7 +114,7 @@ THIRDPARTY_IGNORE ?=
 THIRDPARTY_DEPENDENCIES = supertuple
 
 THIRDPARTY_TARGETS := $(filter-out $(THIRDPARTY_IGNORE),$(THIRDPARTY_DEPENDENCIES))
-THIRDPARTY_TARGETS := $(THIRDPARTY_TARGETS:%=$(DSTDIR)/%.h)
+THIRDPARTY_TARGETS := $(THIRDPARTY_TARGETS:%=$(DISTRIBUTE_DESTINATION)/%.h)
 
 thirdparty-distribute: prepare-distribute $(THIRDPARTY_TARGETS)
 thirdparty-install:    $(THIRDPARTY_DEPENDENCIES:%=thirdparty-install-%)
@@ -120,12 +123,9 @@ thirdparty-clean:      $(THIRDPARTY_DEPENDENCIES:%=thirdparty-clean-%)
 
 ifndef REFLECTOR_DIST_STANDALONE
 
-export SUPERTUPLE_DIST_STANDALONE = 1
+thirdparty-distribute-%: $(DISTRIBUTE_DESTINATION)/%.h
 
-$(DSTDIR)/%.h: % thirdparty-distribute-%
-	@cp $(PT3DIR)/$</$@ $@
-
-thirdparty-distribute-%: %
+$(DISTRIBUTE_DESTINATION)/%.h: %
 	@$(MAKE) --no-print-directory -C $(PT3DIR)/$< distribute
 
 thirdparty-install-%: %

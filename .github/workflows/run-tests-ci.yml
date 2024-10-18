@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests
         run: |
-          CXX=${{matrix.compiler}} make run-tests -j4
+          CXX=${{matrix.compiler}} make run-tests -j
 
       - name: Clean-up
         run: |
