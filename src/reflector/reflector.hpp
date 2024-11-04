@@ -33,8 +33,9 @@ class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_
     static_assert(
         sizeof (typename provider_t::target_t) == sizeof (T) &&
         alignof(typename provider_t::target_t) == alignof(T) &&
-        std::is_base_of_v<typename provider_t::target_t, T>
-      , "the reflection target type is not compatible with the provided type");
+        ((std::is_union_v<T> && std::is_same_v<typename provider_t::target_t, T>) ||
+            std::is_base_of_v<typename provider_t::target_t, T>)
+      , "the produced reflection type is incompatible with the target type");
 
     public:
         using reference_tuple_t = underlying_t;

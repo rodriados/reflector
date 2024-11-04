@@ -89,9 +89,9 @@ clean: clean-distribute
 	@rm -rf $(OBJDIR)
 	@rm -rf $(BINDIR)
 
-.PHONY: all clean tests install uninstall
+.PHONY: all clean install uninstall
 .PHONY: prepare-distribute distribute no-thirdparty-distribute clean-distribute
-.PHONY: prepare-tests build-tests run-tests
+.PHONY: prepare-tests build-tests tests run-tests
 
 $(REFLECTOR_DIST_TARGET): $(SRCFILES)
 	@python3 pack.py -c $(REFLECTOR_DIST_CONFIG) -o $@

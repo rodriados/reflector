@@ -38,8 +38,6 @@ namespace detail
         public:
             typedef T target_t;
 
-        static_assert(!std::is_union_v<T>, "union types cannot be reflected");
-
         private:
             /**
              * A generic aligned memory storage container.
