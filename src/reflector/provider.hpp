@@ -36,14 +36,19 @@ struct provider_t;
 template <typename T>
 struct provider_t
 {
+    static_assert(std::is_trivial_v<T>, "reflected type must be trivial");
+    static_assert(!std::is_union_v<T>, "union types reflection must be explicitly provided");
+
     /**
      * Invokes the reflection loophole to describe the target type.
      * @return The type description provided by the automatic reflection mechanism.
      */
+    template <
+        typename = std::enable_if_t<
+            !std::is_union_v<T> &&
+            std::is_trivial_v<T>>>
     REFLECTOR_CONSTEXPR static auto provide() noexcept
     {
-        static_assert(!std::is_union_v<T>, "union types reflection must be explicitly provided");
-        static_assert(std::is_trivial_v<T>, "reflected type must be trivial");
         return detail::descriptor_t<T, decltype(detail::loophole<T>())>();
     }
 };
