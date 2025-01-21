@@ -1,19 +1,22 @@
 /**
  * Reflector: A simple struct reflection framework for C++17.
- * @file Test cases for the loophole reflection mechanism.
+ * @file Test cases for the manual provider reflection mechanism.
  * @author Rodrigo Siqueira <rodriados@gmail.com>
  * @copyright 2025-present Rodrigo Siqueira
  */
+#define REFLECTOR_AVOID_LOOPHOLE
+#define REFLECTOR_SHAPE_TEST_DEFINE_PROVIDERS
+
 #include <reflector.h>
 #include <catch2/catch_test_macros.hpp>
 
 #include "resources/shapes.hpp"
 
 /**
- * A use-case for generic and nested types reflected using the loophole mechanism.
+ * A use-case for generic and nested types reflected using the provider mechanism.
  * @since 1.0
  */
-TEST_CASE("general use-case for the loophole mechanism", "[loophole]")
+TEST_CASE("general use-case for the provider mechanism", "[provider]")
 {
     auto point    = shape::point_t {4., 5.};
     auto circle   = shape::circle_t {point, 3.};
