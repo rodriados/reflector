@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Reflector: A simple struct reflection framework for C++17.
-@file Source code packing script.
+@file Script for packing header-files into a single bundle file.
 @author Rodrigo Siqueira <rodriados@gmail.com>
 @copyright 2024-present Rodrigo Siqueira
 """

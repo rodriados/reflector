@@ -1,5 +1,5 @@
 [output]
-outfile = dist/reflector.h
+outfile = build/reflector.h
 
 [project]
 workingdir = src

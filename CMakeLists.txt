@@ -139,3 +139,9 @@ if(BUILD_TESTING AND REFLECTOR_MASTER_PROJECT AND REFLECTOR_BUILD_TESTING)
   enable_testing()
   add_subdirectory(test)
 endif()
+
+# Declaration of target for bundling and packing the project's source code to make
+# it possible to include the whole library as a single header-only file.
+if(REFLECTOR_MASTER_PROJECT)
+  include(PackSourceCode)
+endif()
