@@ -22,6 +22,11 @@ TEST_CASE("general use-case for the provider mechanism", "[provider]")
     auto circle   = shape::circle_t {point, 3.};
     auto cilinder = shape::cilinder_t {circle, 6.};
 
+    /**
+     * Test whether a simple struct can be automatically reflected using the provider
+     * mechanism. The extracted variables must be references to the object.
+     * @since 1.0
+     */
     SECTION("can reflect over a simple structure") {
         auto [x, y] = reflector::reflection_t(point);
 
@@ -29,6 +34,11 @@ TEST_CASE("general use-case for the provider mechanism", "[provider]")
         REQUIRE(y == 5.);
     }
 
+    /**
+     * Test whether a composed struct, that is, with another struct as a member
+     * can be automatically reflected with the provider mechanism.
+     * @since 1.0
+     */
     SECTION("can reflect over a composed structure") {
         auto [p, radius] = reflector::reflection_t(circle);
 
@@ -37,6 +47,11 @@ TEST_CASE("general use-case for the provider mechanism", "[provider]")
         REQUIRE(radius == 3.);
     }
 
+    /**
+     * Test whether references are kept through multiple reflections over the same
+     * object with the provider mechanism.
+     * @since 1.0
+     */
     SECTION("references are preserved over multiple reflections") {
         auto [c, height] = reflector::reflection_t(cilinder);
         auto [cpoint, _] = reflector::reflection_t(c);
