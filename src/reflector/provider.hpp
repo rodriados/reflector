@@ -43,10 +43,6 @@ struct provider_t
      * Invokes the reflection loophole to describe the target type.
      * @return The type description provided by the automatic reflection mechanism.
      */
-    template <
-        typename = std::enable_if_t<
-            !std::is_union_v<T> &&
-            std::is_trivial_v<T>>>
     REFLECTOR_CONSTEXPR static auto provide() noexcept
     {
         return detail::descriptor_t<T, decltype(detail::loophole<T>())>();

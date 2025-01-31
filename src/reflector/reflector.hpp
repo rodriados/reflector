@@ -51,7 +51,7 @@ class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_
          * @param target The target instance to get references from.
          */
         REFLECTOR_INLINE reflection_t(T& target) noexcept
-          : underlying_t (extract(target, std::make_index_sequence<underlying_t::count>()))
+          : reflection_t (target, std::make_index_sequence<underlying_t::count>())
         {}
 
         REFLECTOR_INLINE reflection_t& operator=(const reflection_t&) = default;
@@ -81,7 +81,7 @@ class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_
         REFLECTOR_CONSTEXPR static auto member(T& target) noexcept
         -> typename reference_tuple_t::template element_t<N> {
             using E = typename reflection_tuple_t::template element_t<N>;
-            return *reinterpret_cast<E*>(reinterpret_cast<uint8_t*>(&target) + offset<N>());
+            return *reinterpret_cast<E*>((uint8_t*) &target + offset<N>());
         }
 
     private:
@@ -92,10 +92,9 @@ class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_
          * @return The new reference tuple instance.
          */
         template <size_t ...I>
-        REFLECTOR_INLINE static underlying_t extract(T& target, std::index_sequence<I...>) noexcept
-        {
-            return underlying_t(member<I>(target)...);
-        }
+        REFLECTOR_INLINE reflection_t(T& target, std::index_sequence<I...>) noexcept
+          : underlying_t(member<I>(target)...)
+        {}
 };
 
 REFLECTOR_END_NAMESPACE
