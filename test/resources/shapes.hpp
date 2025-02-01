@@ -6,80 +6,70 @@
  */
 #pragma once
 
-#ifdef REFLECTOR_SHAPE_TEST_DEFINE_PROVIDERS
-  #include <reflector.h>
-#endif
+#include <reflector.h>
 
-namespace shape
+namespace shape::loophole
 {
     /**
-     * A simple two-dimensional point representation.
-     * The point is represented as a coordinate pair of numbers.
+     * A simple n-dimensional point represented by a n-dimensional coordinate.
+     * @tparam N The number of spacial dimensions.
      * @since 1.0
      */
-    struct point_t {
-        double coords[2];
-    };
+    template <size_t N = 2>
+    struct point_t { double coords[N]; };
 
     /**
-     * A simple two-dimensional circle representation.
-     * The circle is represented by a center point and its radius.
+     * A simple n-dimensional line segment represented by two points.
+     * @tparam N The number of spacial dimensions.
      * @since 1.0
      */
-    struct circle_t {
-        point_t center;
-        double radius;
-    };
-
-    /**
-     * A simple three-dimensional non-rotated cilinder representation.
-     * The cilinder is represented as a base circle and its height.
-     * @since 1.0
-     */
-    struct cilinder_t {
-        circle_t surface;
-        double height;
-    };
+    template <size_t N = 2>
+    struct line_t { point_t<N> a, b; };
 }
 
-#ifdef REFLECTOR_SHAPE_TEST_DEFINE_PROVIDERS
+namespace shape::provider
+{
+    /**
+     * A simple n-dimensional point represented by a n-dimensional coordinate.
+     * @tparam N The number of spacial dimensions.
+     * @since 1.0
+     */
+    template <size_t N = 2>
+    struct point_t { double coords[N]; };
+
+    /**
+     * A simple n-dimensional line segment represented by two points.
+     * @tparam N The number of spacial dimensions.
+     * @since 1.0
+     */
+    template <size_t N = 2>
+    struct line_t { point_t<N> a, b; };
+}
+
 /**
- * Specializes a reflector provider for a point, thus allowing it to be reflected
- * without the using the loophole mechanism.
+ * Specializes a reflector provider for a generic n-dimensional point, thus enabling
+ * it for reflection via the explicit provider mechanism.
+ * @tparam N The number of spacial dimensions.
  * @since 1.0
  */
-template <>
-struct reflector::provider_t<shape::point_t> {
-    inline constexpr static auto provide() noexcept {
-        return reflector::provide(&shape::point_t::coords);
+template <size_t N>
+struct reflector::provider_t<shape::provider::point_t<N>> {
+    typedef shape::provider::point_t<N> point_t;
+    REFLECTOR_CONSTEXPR static auto provide() noexcept {
+        return reflector::provide(&point_t::coords);
     }
 };
 
 /**
- * Specializes a reflector provider for a circle, thus allowing it to be reflected
- * without the using the loophole mechanism.
+ * Specializes a reflector provider for a generic n-dimensional line, thus enabling
+ * it for reflection via the explicit provider mechanism.
+ * @tparam N The number of spacial dimensions.
  * @since 1.0
  */
-template <>
-struct reflector::provider_t<shape::circle_t> {
-    inline constexpr static auto provide() noexcept {
-        return reflector::provide(
-            &shape::circle_t::center
-          , &shape::circle_t::radius);
+template <size_t N>
+struct reflector::provider_t<shape::provider::line_t<N>> {
+    typedef shape::provider::line_t<N> line_t;
+    REFLECTOR_CONSTEXPR static auto provide() noexcept {
+        return reflector::provide(&line_t::a, &line_t::b);
     }
 };
-
-/**
- * Specializes a reflector provider for a cilinder, thus allowing it to be reflected
- * without the using the loophole mechanism.
- * @since 1.0
- */
-template <>
-struct reflector::provider_t<shape::cilinder_t> {
-    inline constexpr static auto provide() noexcept {
-        return reflector::provide(
-            &shape::cilinder_t::surface
-          , &shape::cilinder_t::height);
-    }
-};
-#endif
