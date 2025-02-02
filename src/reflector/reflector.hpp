@@ -21,13 +21,13 @@ REFLECTOR_BEGIN_NAMESPACE
  * @since 1.0
  */
 template <typename T>
-class reflection_t : public decltype(provider_t<T>::provide())::reference_tuple_t
+class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())::reference_tuple_t
 {
     public:
         typedef T target_t;
 
     private:
-        typedef decltype(provider_t<T>::provide()) provider_t;
+        typedef decltype(provider_t<std::remove_cv_t<T>>::provide()) provider_t;
         typedef typename provider_t::reference_tuple_t underlying_t;
 
     static_assert(
