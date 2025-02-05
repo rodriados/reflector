@@ -90,6 +90,12 @@ if(REFLECTOR_ENABLE_PEDANTIC)
   endif()
 endif()
 
+# Declaration of target for bundling and packing the project's source code to make
+# it possible to include the whole library as a single header-only file.
+if(REFLECTOR_MASTER_PROJECT)
+  add_subdirectory(src)
+endif()
+
 # Installs the library by copying all needed files to their corresponding destination
 # folders. The library should be installed globally in the user system.
 if(REFLECTOR_INSTALL)
@@ -138,10 +144,4 @@ if(BUILD_TESTING AND REFLECTOR_MASTER_PROJECT AND REFLECTOR_BUILD_TESTING)
   include(CTest)
   enable_testing()
   add_subdirectory(test)
-endif()
-
-# Declaration of target for bundling and packing the project's source code to make
-# it possible to include the whole library as a single header-only file.
-if(REFLECTOR_MASTER_PROJECT)
-  include(PackSourceCode)
 endif()

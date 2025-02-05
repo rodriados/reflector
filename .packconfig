@@ -4,4 +4,4 @@ outfile = build/reflector.h
 [project]
 workingdir = src
 namespace = reflector
-entrypoint = reflector.h
+entrypoint = reflector/api.h

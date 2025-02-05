@@ -7,8 +7,8 @@
 #pragma once
 
 #include <utility>
-#include <supertuple.h>
 
+#include <supertuple/api.h>
 #include <reflector/environment.h>
 #include <reflector/detail/loophole.hpp>
 #include <reflector/detail/descriptor.hpp>

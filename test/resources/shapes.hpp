@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <reflector.h>
+#include <reflector/api.h>
 
 namespace shape::loophole
 {

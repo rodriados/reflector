@@ -5,9 +5,9 @@
  * @copyright 2025-present Rodrigo Siqueira
  */
 #include <utility>
-#include <supertuple.h>
-#include <reflector.h>
 
+#include <reflector/api.h>
+#include <supertuple/api.h>
 #include <catch2/catch_test_macros.hpp>
 
 #include "resources/shapes.hpp"
