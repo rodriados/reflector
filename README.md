@@ -18,30 +18,43 @@ interface.
 
 ## Features
 
-- **Header-only**: just include a header and you are ready to go.
-- **Automatic field registration**: no extra boilerplate code for POD structs.
-- **Compile-time reflection**: all field values and offsets are mapped at compile time.
+- **Header-only**: Include a single header and you are ready to go.
+- **Automatic Field Registration**: No extra boilerplate code for POD structs.
+- **Template Metaprogramming**: Leverages compile-time evaluation for efficiency.
+- **Compile-time Reflection**: All field values and offsets are mapped at compile time.
 
 ## Install
-Reflector is a single-header library that can be included directly in your source
-tree and depends on the [supertuple](https://github.com/rodriados/supertuple) library
-for creating memory-aligned tuples with raw C++ structs.
+**Reflector** is a single-header library. To use it:
+- Either **copy the header** by downloading `reflector.h` from the
+[latest release](https://github.com/rodriados/reflector/releases/latest) and including
+it directly in your project.
+- Or use **CMake integration** to install via CMake for project or system-wide use.
+**Reflector** depends on the [SuperTuple](https://github.com/rodriados/supertuple)
+library for creating memory-aligned tuples with raw C++ structs.
 
 ## Usage
-To use the project, you can copy source files into your own project or install it
-on your system via CMake and then reference it in your code:
-```cpp
-#include <reflector.h>
-```
+**Reflector** provides a generic reflector type, `reflector::reflection_t`, to reflect
+over any POD type. Below is an example of usage.
 
 ## Example
 If automatic reflection is possible with your configuration, it is as easy as:
 ```cpp
-#include <reflector.h>
+#include <reflector/api.h>
 
 struct point_t { int x, y; };
 
 const auto point = point_t {3, 4};
-const auto reflection = reflector::reflection_t(point);
-const auto x = reflection.get<0>(); // x == 3
+const auto r = reflector::reflection_t(point);
+const auto x = r.get<0>(); // x == 3
 ```
+
+## License
+
+**Reflector** is licensed under the MIT License. See
+[LICENSE](https://github.com/rodriados/reflector/blob/main/LICENSE) for details.
+
+## Contributing
+
+Contributions are welcome! Please submit issues or pull requests via the
+[GitHub repository](https://github.com/rodriados/reflector). Ensure code follows
+C++17 standards and includes appropriate tests.

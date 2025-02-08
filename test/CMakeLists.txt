@@ -14,7 +14,7 @@ file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS *.cpp)
 # should be responsible for running all tests listed in the repository.
 add_executable(ReflectorTest ${TEST_SOURCES})
 target_link_libraries(ReflectorTest PRIVATE Catch2::Catch2WithMain ${PROJECT_NAME})
-target_include_directories(ReflectorTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test)
+target_include_directories(ReflectorTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Automatically discovers the tests found on the repository and allows them to be
 # called from and linked to ctest.
