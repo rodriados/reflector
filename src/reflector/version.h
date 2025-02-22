@@ -10,7 +10,7 @@
  * The preprocessor macros encoding the current Reflector library release version.
  * This is guaranteed to change with every Reflector release.
  */
-#define REFLECTOR_VERSION 10000
+#define REFLECTOR_VERSION 10001
 
 /**
  * The preprocessor macros encoding the release policy's values to the current Reflector

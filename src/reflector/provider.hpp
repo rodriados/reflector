@@ -8,10 +8,10 @@
 
 #include <utility>
 
-#include <supertuple/api.h>
 #include <reflector/environment.h>
 #include <reflector/detail/loophole.hpp>
 #include <reflector/detail/descriptor.hpp>
+#include <reflector/thirdparty/supertuple.h>
 
 REFLECTOR_BEGIN_NAMESPACE
 
@@ -75,24 +75,15 @@ namespace detail
 template <typename T, typename ...R>
 REFLECTOR_CONSTEXPR auto provide(R T::*...) noexcept
 {
-    using namespace supertuple;
-
     // When a type is reflected via the loophole mechanism, array fields present
     // in the type are flattened, effectivelly creating a different index for each
     // element of each array field. On the other hand, when the type's fields are
     // manually provided, these array fields become a single index in the reflection.
     // This behaviour difference is not useful. Therefore, we must flatten these
     // array fields to produce consistent behaviour between different mechanisms.
-
-    constexpr auto concatenate = [](auto a, auto b) {
-        return supertuple::concat(a, b);
-    };
-
     using loophole_tuple_t = decltype(
-        supertuple::foldl(
-            tuple_t<decltype(detail::flatten(tuple_t<R>()))...>()
-          , concatenate
-        ));
+        supertuple::concat(
+            decltype(detail::flatten(supertuple::tuple_t<R>()))()...));
 
     return detail::descriptor_t<T, std::decay_t<loophole_tuple_t>>();
 }

@@ -1,0 +1,25 @@
+/**
+ * Reflector: A simple struct reflection framework for C++17.
+ * @file Configuration and inclusion of the supertuple third party library.
+ * @author Rodrigo Siqueira <rodriados@gmail.com>
+ * @copyright 2025-present Rodrigo Siqueira
+ */
+#pragma once
+
+#ifndef REFLECTOR_AVOID_INCLUDE_THIRDPARTY
+  #ifdef REFLECTOR_OVERRIDE_SUPERTUPLE
+    #include REFLECTOR_OVERRIDE_SUPERTUPLE
+  #elif __has_include(<supertuple/api.h>)
+    #include <supertuple/api.h>
+  #elif __has_include(<supertuple.h>)
+    #include <supertuple.h>
+  #endif
+#endif
+
+/*
+ * Check whether the dependency has been successfully included. If not, we must
+ * bail out and inform that it is a required dependency and must be included.
+ */
+#ifndef SUPERTUPLE_HEADER_INCLUDED
+  #error "SuperTuple is a required dependency and must be included before Reflector"
+#endif

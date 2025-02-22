@@ -25,8 +25,8 @@
 #include <cstdint>
 #include <utility>
 
-#include <supertuple/api.h>
 #include <reflector/environment.h>
+#include <reflector/thirdparty/supertuple.h>
 
 #ifndef REFLECTOR_AVOID_LOOPHOLE
   #if REFLECTOR_CPP_DIALECT < 2014
