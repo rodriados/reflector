@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.24)
 include(FetchContent)
 
 set(SUPERTUPLE_REPOSITORY "https://github.com/rodriados/supertuple.git")
-set(SUPERTUPLE_REPOSITORY_TAG "v1.1.3")
+set(SUPERTUPLE_REPOSITORY_TAG "v1.1.4")
 
 # Declares the remote source of the required package and allows it to be found.
 # If needed, the package will be downloaded and cached for build.
@@ -15,9 +15,8 @@ FetchContent_Declare(
   SuperTuple
     GIT_SHALLOW true
     GIT_REPOSITORY ${SUPERTUPLE_REPOSITORY}
-    GIT_TAG ${SUPERTUPLE_REPOSITORY_TAG}
-    OVERRIDE_FIND_PACKAGE)
+    GIT_TAG ${SUPERTUPLE_REPOSITORY_TAG})
 
 # Now that the package is declared, we must find and configure it so that its variables
 # and targets are made available for the parent context.
-find_package(SuperTuple REQUIRED)
+FetchContent_MakeAvailable(SuperTuple)
