@@ -6,14 +6,14 @@
  */
 #pragma once
 
-#ifndef REFLECTOR_AVOID_INCLUDE_THIRDPARTY
-  #ifdef REFLECTOR_OVERRIDE_SUPERTUPLE
-    #include REFLECTOR_OVERRIDE_SUPERTUPLE
-  #elif __has_include(<supertuple/api.h>)
-    #include <supertuple/api.h>
-  #elif __has_include(<supertuple.h>)
-    #include <supertuple.h>
-  #endif
+#ifdef REFLECTOR_OVERRIDE_SUPERTUPLE
+  #include REFLECTOR_OVERRIDE_SUPERTUPLE
+#elif __has_include(<rodriados/supertuple.h>)
+  #include <rodriados/supertuple.h>
+#elif __has_include(<supertuple/api.h>)
+  #include <supertuple/api.h>
+#else
+  #include <supertuple.h>
 #endif
 
 /*
