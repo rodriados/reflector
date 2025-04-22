@@ -43,7 +43,7 @@ struct provider_t
      * Invokes the reflection loophole to describe the target type.
      * @return The type description provided by the automatic reflection mechanism.
      */
-    REFLECTOR_CONSTEXPR static auto provide() noexcept
+    REFLECTOR_CUDA_CONSTEXPR static auto provide() noexcept
     {
         return detail::descriptor_t<T, decltype(detail::loophole<T>())>();
     }
@@ -62,7 +62,7 @@ namespace detail
         typename T
       , typename E = std::remove_all_extents_t<T>
       , size_t N   = sizeof(T) / sizeof(E)>
-    REFLECTOR_CONSTEXPR auto flatten(supertuple::tuple_t<T>) noexcept
+    REFLECTOR_CUDA_CONSTEXPR auto flatten(supertuple::tuple_t<T>) noexcept
     -> typename supertuple::ntuple_t<E, N>::base_tuple_t;
 }
 
@@ -73,7 +73,7 @@ namespace detail
  * @return The target type descriptor instance.
  */
 template <typename T, typename ...R>
-REFLECTOR_CONSTEXPR auto provide(R T::*...) noexcept
+REFLECTOR_CUDA_CONSTEXPR auto provide(R T::*...) noexcept
 {
     // When a type is reflected via the loophole mechanism, array fields present
     // in the type are flattened, effectivelly creating a different index for each
@@ -83,7 +83,7 @@ REFLECTOR_CONSTEXPR auto provide(R T::*...) noexcept
     // array fields to produce consistent behaviour between different mechanisms.
     using loophole_tuple_t = decltype(
         supertuple::concat(
-            decltype(detail::flatten(supertuple::tuple_t<R>()))()...));
+            decltype(detail::flatten(supertuple::tuple_t<R>())){}...));
 
     return detail::descriptor_t<T, std::decay_t<loophole_tuple_t>>();
 }

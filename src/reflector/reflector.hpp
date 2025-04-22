@@ -28,7 +28,7 @@ class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())
 
     private:
         typedef decltype(provider_t<std::remove_cv_t<T>>::provide()) provider_t;
-        typedef typename provider_t::reference_tuple_t underlying_t;
+        typedef typename provider_t::reference_tuple_t super_t;
 
     static_assert(
         sizeof (typename provider_t::target_t) == sizeof (T) &&
@@ -38,7 +38,7 @@ class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())
       , "the produced reflection type is incompatible with the target type");
 
     public:
-        using reference_tuple_t = underlying_t;
+        using reference_tuple_t = super_t;
         using reflection_tuple_t = typename provider_t::reflection_tuple_t;
 
     public:
@@ -50,8 +50,8 @@ class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())
          * Reflects over an instance and gathers refereces to its members.
          * @param target The target instance to get references from.
          */
-        REFLECTOR_INLINE reflection_t(T& target) noexcept
-          : reflection_t (target, std::make_index_sequence<underlying_t::count>())
+        REFLECTOR_CUDA_INLINE reflection_t(T& target) noexcept
+          : reflection_t (target, std::make_index_sequence<super_t::count>())
         {}
 
         REFLECTOR_INLINE reflection_t& operator=(const reflection_t&) = default;
@@ -64,7 +64,7 @@ class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())
          * @return The member offset.
          */
         template <size_t N>
-        REFLECTOR_CONSTEXPR static auto offset() noexcept -> ptrdiff_t
+        REFLECTOR_CUDA_CONSTEXPR static auto offset() noexcept -> ptrdiff_t
         {
             constexpr typename provider_t::storage_tuple_t s {};
             return reinterpret_cast<size_t>(&s.template get<N>())
@@ -78,7 +78,7 @@ class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())
          * @return The extracted member reference.
          */
         template <size_t N>
-        REFLECTOR_CONSTEXPR static auto member(T& target) noexcept
+        REFLECTOR_CUDA_CONSTEXPR static auto member(T& target) noexcept
         -> typename reference_tuple_t::template element_t<N> {
             using E = typename reflection_tuple_t::template element_t<N>;
             return *reinterpret_cast<E*>((uint8_t*) &target + offset<N>());
@@ -92,8 +92,8 @@ class reflection_t : public decltype(provider_t<std::remove_cv_t<T>>::provide())
          * @return The new reference tuple instance.
          */
         template <size_t ...I>
-        REFLECTOR_INLINE reflection_t(T& target, std::index_sequence<I...>) noexcept
-          : underlying_t(member<I>(target)...)
+        REFLECTOR_CUDA_INLINE reflection_t(T& target, std::index_sequence<I...>) noexcept
+          : super_t(member<I>(target)...)
         {}
 };
 

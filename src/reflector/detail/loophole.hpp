@@ -60,7 +60,7 @@ namespace detail
     template <typename T, size_t N>
     struct tag_t
     {
-        REFLECTOR_CONSTEXPR friend auto latch(tag_t<T, N>) noexcept;
+        REFLECTOR_CUDA_CONSTEXPR friend auto latch(tag_t<T, N>) noexcept;
     };
 
     /**
@@ -79,7 +79,7 @@ namespace detail
          * but only its return type.
          * @return The extracted type bound to the member index.
          */
-        REFLECTOR_CONSTEXPR friend auto latch(tag_t<T, N>) noexcept
+        REFLECTOR_CUDA_CONSTEXPR friend auto latch(tag_t<T, N>) noexcept
         {
             return std::remove_all_extents_t<P> {};
         }
@@ -103,7 +103,7 @@ namespace detail
          * @tparam M The index of the property member being processed.
          */
         template <typename P, size_t M>
-        REFLECTOR_CONSTEXPR static auto inject(...) -> injector_t<T, P, M>;
+        REFLECTOR_CUDA_CONSTEXPR static auto inject(...) -> injector_t<T, P, M>;
 
       #if REFLECTOR_HOST_COMPILER != REFLECTOR_HOST_COMPILER_CLANG
         /**
@@ -112,7 +112,7 @@ namespace detail
          * @tparam M The index of the property member being processed.
          */
         template <typename, size_t M>
-        REFLECTOR_CONSTEXPR static auto inject(int) -> decltype(latch(tag_t<T, M>()));
+        REFLECTOR_CUDA_CONSTEXPR static auto inject(int) -> decltype(latch(tag_t<T, M>()));
       #endif
 
         /**
@@ -121,7 +121,7 @@ namespace detail
          * @tparam P The type to morph the decoy into.
          */
         template <typename P, size_t = sizeof(inject<P, N>(0))>
-        REFLECTOR_CONSTEXPR operator P&() const noexcept;
+        REFLECTOR_CUDA_CONSTEXPR operator P&() const noexcept;
     };
 
     /**
@@ -131,7 +131,7 @@ namespace detail
      * @return The total number of members within the target type.
      */
     template <typename T, size_t ...I>
-    REFLECTOR_CONSTEXPR auto count(...) noexcept -> size_t
+    REFLECTOR_CUDA_CONSTEXPR auto count(...) noexcept -> size_t
     {
         return sizeof...(I) - 1;
     }
@@ -145,7 +145,7 @@ namespace detail
      * @return The total number of members within the target type.
      */
     template <typename T, size_t ...I, size_t = sizeof(T{decoy_t<T, I>()...})>
-    REFLECTOR_CONSTEXPR auto count(int) noexcept -> size_t
+    REFLECTOR_CUDA_CONSTEXPR auto count(int) noexcept -> size_t
     {
         return count<T, I..., sizeof...(I)>(0);
     }
@@ -157,7 +157,7 @@ namespace detail
      * @return The tuple of extracted types.
      */
     template <typename T, size_t ...I, size_t = sizeof(T{decoy_t<T, I>()...})>
-    REFLECTOR_CONSTEXPR auto loophole1(std::index_sequence<I...>) noexcept
+    REFLECTOR_CUDA_CONSTEXPR auto loophole1(std::index_sequence<I...>) noexcept
     -> supertuple::tuple_t<decltype(latch(tag_t<T, I>()))...>;
 
     /**
@@ -167,7 +167,7 @@ namespace detail
      * @return The tuple of extracted types.
      */
     template <typename T>
-    REFLECTOR_CONSTEXPR auto loophole() noexcept
+    REFLECTOR_CUDA_CONSTEXPR auto loophole() noexcept
     -> decltype(loophole1<T>(std::make_index_sequence<count<T>(0)>()));
 }
 

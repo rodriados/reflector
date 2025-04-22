@@ -212,10 +212,10 @@
  * the use of these annotations without needing to care whether they'll be known
  * by the compiler or not.
  */
-#if REFLECTOR_DEVICE_COMPILER == REFLECTOR_DEVICE_COMPILER_NVCC
-  #define REFLECTOR_CUDA_ENABLED __host__ __device__
-#else
-  #define REFLECTOR_CUDA_ENABLED
+#if !defined(__CUDACC__)
+  #define __host__
+  #define __device__
+  #define __forceinline__
 #endif
 
 /*
@@ -223,8 +223,11 @@
  * minimum required language version is C++17, we assume it is guaranteed that all
  * compilers will have `inline` and `constexpr` implemented.
  */
-#define REFLECTOR_INLINE REFLECTOR_CUDA_ENABLED inline
+#define REFLECTOR_INLINE inline
 #define REFLECTOR_CONSTEXPR REFLECTOR_INLINE constexpr
+#define REFLECTOR_CUDA_ENABLED __host__ __device__
+#define REFLECTOR_CUDA_INLINE REFLECTOR_CUDA_ENABLED REFLECTOR_INLINE
+#define REFLECTOR_CUDA_CONSTEXPR REFLECTOR_CUDA_ENABLED REFLECTOR_CONSTEXPR
 
 /**
  * Defines the namespace in which the library lives. This might be overriden if

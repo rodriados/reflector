@@ -56,8 +56,8 @@ namespace detail
             using storage_tuple_t = supertuple::tuple_t<storage_t<sizeof(R), alignof(R)>...>;
 
         static_assert(
-            sizeof (target_t) == sizeof (reflection_tuple_t) &&
-            alignof(target_t) == alignof(reflection_tuple_t)
+            sizeof (target_t) == sizeof (storage_tuple_t) &&
+            alignof(target_t) == alignof(storage_tuple_t)
           , "reflection tuple is not compatible with target type"
         );
     };
